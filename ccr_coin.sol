@@ -1,4 +1,6 @@
-pragma solidity ^0.6.0;
+pragma solidity >=0.4.22 <0.7.0;
+
+pragma experimental ABIEncoderV2;
 
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol";
 
@@ -14,11 +16,15 @@ contract CCRToken is ERC20 {
     struct StoreItem {
         string name;
         uint152 price;
+        string imageUrl;
+        string description;
     }
 
     struct StoreVoucher {
         string name;
         uint152 price;
+        string imageUrl;
+        string description;
     }
 
     struct Store {
@@ -30,12 +36,17 @@ contract CCRToken is ERC20 {
         string description;
         string location;
         string telefone;
+    }
+    
+    struct StoreRelationship {
+        uint256 id;
         StoreItem[] items;
         StoreVoucher[] vouchers;
     }
 
     mapping(string => Driver) private drivers;
     mapping(uint256 => Store) private stores;
+    mapping(uint256 => StoreRelationship) private storeRelationships;
 
     constructor() public ERC20("CCRCoins", "CCR") {
         _mint(msg.sender, 100000000000000000000000000);
@@ -64,8 +75,52 @@ contract CCRToken is ERC20 {
         return true;
     }
 
-    // Store
-    function insertStore() external returns (bool success) {
-
+    // Insert Store 
+    function insertStore(
+        string memory name,
+        string memory storeType,
+        string memory rating,
+        string memory imageUrl,
+        string memory description,
+        string memory location,
+        string memory telefone) external returns (bool success) {
+        
+        stores[storeCount] = Store(
+            storeCount,
+            name,
+            storeType,
+            rating,
+            imageUrl,
+            description,
+            location,
+            telefone
+        );
+        // storeRelationships[storeCount] = StoreRelationship(
+        //     storeCount,
+        //     "",
+        //     ""
+        //     );
+        
+        storeCount = storeCount + 1;
+        return true;
+    }  
+    
+    function insertStoreItem(uint256 id, string memory itemName, uint152  itemPrice, string memory imageUrl, string memory description) external returns (bool success) {
+        storeRelationships[id].items.push(StoreItem(itemName, itemPrice, imageUrl, description));
+        return true;
+    }
+    function insertVoucherItem(uint256 id, string memory itemName, uint152  itemPrice, string memory imageUrl, string memory description) external returns (bool success) {
+        storeRelationships[id].vouchers.push(StoreVoucher(itemName, itemPrice, imageUrl, description));
+        return true;
+    }
+    
+    function getStore(uint256 id)  public view returns (Store memory){
+        return stores[id];
+    }
+    function getStoreItems(uint256 id)  public view returns (StoreItem[] memory){
+        return storeRelationships[id].items;
+    }
+    function getStoreVouchers(uint256 id)  public view returns (StoreVoucher[] memory){
+        return storeRelationships[id].vouchers;
     }
 }
